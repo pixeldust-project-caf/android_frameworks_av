@@ -128,6 +128,9 @@ cc_library {
     },
     defaults: ["libstagefright_foundation_defaults"],
     min_sdk_version: "29",
+    header_abi_checker: {
+        enabled: false,
+    },
     target: {
         vendor: {
             cflags: ["-D__ANDROID_VNDK__"],
