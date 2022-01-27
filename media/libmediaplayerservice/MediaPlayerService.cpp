@@ -21,6 +21,7 @@
 #define LOG_TAG "MediaPlayerService"
 #include <utils/Log.h>
 
+#include <inttypes.h>
 #include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>

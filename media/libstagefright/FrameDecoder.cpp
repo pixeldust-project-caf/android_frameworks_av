@@ -943,7 +943,6 @@ status_t MediaImageDecoder::onOutputReceived(
     }
 
     int32_t width, height, stride, slice_height;
-
     if (outputFormat->findInt32("width", &width) == false) {
         ALOGE("MediaImageDecoder::onOutputReceived:width is missing in outputFormat");
         return ERROR_MALFORMED;
@@ -956,9 +955,9 @@ status_t MediaImageDecoder::onOutputReceived(
         ALOGE("MediaImageDecoder::onOutputReceived:stride is missing in outputFormat");
         return ERROR_MALFORMED;
     }
-    if (outputFormat->findInt32("slice_height", &slice_height) == false) {
-        ALOGE("MediaImageDecoder::onOutputReceived:slice_height is missing in outputFormat");
-        return ERROR_MALFORMED;
+
+    if (!outputFormat->findInt32("slice-height", &slice_height)) {
+        slice_height = height;
     }
 
     if (mFrame == NULL) {
