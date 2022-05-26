@@ -158,6 +158,13 @@ CCodecBufferChannel::CCodecBufferChannel(
       mLastInputBufferAvailableTs(0u),
       mIsHWDecoder(false),
       mSendEncryptedInfoBuffer(false) {
+    char board_platform[PROPERTY_VALUE_MAX];
+    property_get("ro.board.platform", board_platform, "");
+    mNeedEmptyWork = false;
+    if (!strncmp(board_platform, "lahaina", 7)) {
+        mNeedEmptyWork = true;
+        ALOGV("CCodecBufferChannel: going to queue empty work for lahaina.");
+    }
     mOutputSurface.lock()->maxDequeueBuffers = kSmoothnessFactor + kRenderingDepth;
     {
         Mutexed<Input>::Locked input(mInput);
@@ -733,7 +740,7 @@ void CCodecBufferChannel::feedInputBufferIfAvailable() {
     // limit this WA to qc hw decoder only
     // if feedInputBufferIfAvailableInternal() successfully (has available input buffer),
     // mLastInputBufferAvailableTs would be updated. otherwise, not input buffer available
-    if (mIsHWDecoder) {
+    if (mNeedEmptyWork && mIsHWDecoder) {
         std::lock_guard<std::mutex> tsLock(mTsLock);
         uint64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(
                 PipelineWatcher::Clock::now().time_since_epoch()).count();
@@ -1642,7 +1649,7 @@ status_t CCodecBufferChannel::requestInitialInputBuffers(
         clientInputBuffers.erase(minIndex);
     }
 
-    if (!clientInputBuffers.empty()) {
+    if (mNeedEmptyWork && !clientInputBuffers.empty()) {
         std::lock_guard<std::mutex> tsLock(mTsLock);
         mLastInputBufferAvailableTs = std::chrono::duration_cast<std::chrono::milliseconds>(
                 PipelineWatcher::Clock::now().time_since_epoch()).count();
@@ -1814,7 +1821,7 @@ bool CCodecBufferChannel::handleWork(
 
     if (work->result == C2_OK){
         notifyClient = true;
-    } else if (work->result == C2_OMITTED) {
+    } else if (mNeedEmptyWork && work->result == C2_OMITTED) {
         ALOGV("[%s] empty work returned; omitted.", mName);
         return false; // omitted
     } else if (work->result == C2_NOT_FOUND) {

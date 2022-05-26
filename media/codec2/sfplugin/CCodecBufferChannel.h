@@ -345,6 +345,9 @@ private:
     std::mutex mTsLock;
     bool mIsHWDecoder;
 
+    // whether the HAL needs a dummy work
+    bool mNeedEmptyWork;
+
     sp<ICrypto> mCrypto;
     sp<IDescrambler> mDescrambler;
 
