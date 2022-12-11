@@ -204,6 +204,8 @@ status_t AudioPolicyMixCollection::getOutputForAttr(
 AudioPolicyMixCollection::MixMatchStatus AudioPolicyMixCollection::mixMatch(
         const AudioMix* mix, size_t mixIndex, const audio_attributes_t& attributes,
         const audio_config_base_t& config, uid_t uid) {
+    // put it in a void expression (does nothing) so that the compiler sees it is used.
+    (void)config;
 
     if (mix->mMixType == MIX_TYPE_PLAYERS) {
         int userId = (int) multiuser_get_user_id(uid);
